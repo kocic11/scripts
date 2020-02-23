@@ -3,7 +3,7 @@ import requests
 import sys
 from datetime import date
 
-def main(config):
+def activity(config):
   result = json.loads(
     """
     {
@@ -45,4 +45,4 @@ if (lenArgs < 2) :
 with open(sys.argv[1]) as f:
   config = json.load(f)
 
-print(main(config))
+print(activity(config))
