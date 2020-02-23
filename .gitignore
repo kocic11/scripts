@@ -1,0 +1,8 @@
+.vscode
+.venv
+env.json
+test_*.py
+__pycache__
+.pytest_cache
+data
+*.json
