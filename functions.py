@@ -46,7 +46,7 @@ def scale(config):
 
   try:
     # Scale up/down
-    uri = "/instancemgmt/" + id_tenant_name + "/services/jaas/instances/" + jcsinstance + "/hosts/scale"
+    uri = jaas_uri + "/instancemgmt/" + id_tenant_name + "/services/jaas/instances/" + jcsinstance + "/hosts/scale"
     
     
     data["components"]["WLS"]["hosts"] = hosts.split(",")

@@ -11,6 +11,6 @@ if (lenArgs < 2) :
 with open(sys.argv[1]) as f:
   config = json.load(f)
 
-# print(scale(config))
-# print(startstop(config))
+print(scale(config))
+print(startstop(config))
 print(activity(config))
