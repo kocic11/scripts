@@ -11,6 +11,9 @@ if (lenArgs < 2) :
 with open(sys.argv[1]) as f:
   config = json.load(f)
 
-print(scale(config))
-print(startstop(config))
-print(activity(config))
+print("Scale up/down")
+print(scale(config, "testjcs", "testjcs-wls-1", "VM.Standard2.1"))
+print("Start/Stop")
+print(startstop(config, "testjcs", "start"))
+print("Activity Logs")
+print(activity(config, "testjcs"))
