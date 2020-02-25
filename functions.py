@@ -35,7 +35,7 @@ def startstop(args, command):
   data = json.loads(
     """
     {
-    "allServiceHosts" : true
+    "allServiceHosts" : "true"
     } 
     """
   )
@@ -60,7 +60,7 @@ def scale(args):
           "WLS": {
             "hosts": [],
             "shape": "",
-            "ignoreManagedServerHeapError": true
+            "ignoreManagedServerHeapError": "true"
           }
       }
     }
@@ -73,7 +73,6 @@ def scale(args):
     uri = jaas_uri + "/instancemgmt/" + id_tenant_name + "/services/jaas/instances/" + args.instance + "/hosts/scale"
     data["components"]["WLS"]["hosts"] = args.hosts.split(",")
     data["components"]["WLS"]["shape"] = args.shape
-    
     result = requests.post(uri, auth=auth, headers=headers, data=json.dumps(data)).json()
   except:
     result["details"]["message"] = "Unexpected error: " + str(sys.exc_info()[0])
