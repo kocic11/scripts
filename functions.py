@@ -149,7 +149,6 @@ def activity(args):
             str(sys.exc_info()[0])
         pass
 
-    __send_email(email, result)
     return result
 
 
