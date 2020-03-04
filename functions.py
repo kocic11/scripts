@@ -77,8 +77,14 @@ def __startstop(args, command):
     try:
         uri = jaas_uri + "/instancemgmt/" + id_tenant_name + \
             "/services/jaas/instances/" + args.instance + "/hosts/" + command
-        result = requests.post(
-            uri, auth=auth, headers=headers, data=json.dumps(data)).json()
+        response = requests.post(
+            uri, auth=auth, headers=headers, data=json.dumps(data))
+        if response.status_code == requests.codes.ACCEPTED:
+            result = response.json()
+        else:
+            result["details"]["message"] = "Unexpected error: " + \
+                str(response.status_code) + ", " +\
+                response.text
     except:
         result["details"]["message"] = "Unexpected error: " + \
             str(sys.exc_info()[0])
@@ -113,8 +119,14 @@ def scale(args):
             "/services/jaas/instances/" + args.instance + "/hosts/scale"
         data["components"]["WLS"]["hosts"] = args.hosts.split(",")
         data["components"]["WLS"]["shape"] = args.shape
-        result = requests.post(
-            uri, auth=auth, headers=headers, data=json.dumps(data)).json()
+        response = requests.post(
+            uri, auth=auth, headers=headers, data=json.dumps(data))
+        if response.status_code == requests.codes.ACCEPTED:
+            result = response.json()
+        else:
+            result["details"]["message"] = "Unexpected error: " + \
+                str(response.status_code) + ", " + \
+                response.text
     except:
         result["details"]["message"] = "Unexpected error: " + \
             str(sys.exc_info()[0])
@@ -143,7 +155,12 @@ def activity(args):
     try:
         uri = jaas_uri + "/activitylog/" + id_tenant_name + "/filter?serviceName=" + \
             args.instance + "&fromStartDate=" + args.fromStartDate
-        result = requests.get(uri, auth=auth, headers=headers).json()
+        response = requests.get(uri, auth=auth, headers=headers)
+        if response.status_code == requests.codes.OK:
+            result = response.json()
+        else:
+            result["details"]["message"] = "Unexpected error: " + \
+                str(response.status_code)
     except:
         result["details"]["message"] = "Unexpected error: " + \
             str(sys.exc_info()[0])
