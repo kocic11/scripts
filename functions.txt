@@ -28,13 +28,15 @@ def __getEnv(env):
     jaas_uri = config.get("jaas_uri")
     email_server = config.get("email_server")
     email_server_port = config.get("email_server_port")
+    email_server_port_ssl = config.get("email_server_port_ssl")
     email_user = config.get("email_user")
     email_user_password = config.get("email_user_password")
     email_from = config.get("email_from")
     email_to = config.get("email_to")
     email_subject = config.get("email_subject")
-    email = {"email_server": email_server, "email_server_port": email_server_port, "email_user": email_user,
-             "email_user_password": email_user_password, "email_from": email_from, "email_to": email_to, "email_subject": email_subject}
+    email = {"email_server": email_server, "email_server_port": email_server_port, "email_server_port_ssl": email_server_port_ssl,
+             "email_user": email_user, "email_user_password": email_user_password, "email_from": email_from, "email_to": email_to,
+             "email_subject": email_subject}
     auth = (user, password)
     headers = {
         "content-type": "application/json",
@@ -45,8 +47,13 @@ def __getEnv(env):
 
 def __send_email(email, message):
     try:
-        smtp_server = smtplib.SMTP_SSL(
-            host=email["email_server"], port=email["email_server_port"])
+        if email["email_server_port_ssl"]:
+            smtp_server = smtplib.SMTP_SSL(
+                host=email["email_server"], port=email["email_server_port"])
+        else:
+            smtp_server = smtplib.SMTP(
+                host=email["email_server"], port=email["email_server_port"])
+
         smtp_server.login(email["email_user"], email["email_user_password"])
         msg = MIMEMultipart()
         msg["From"] = email["email_from"]
