@@ -50,11 +50,13 @@ def __send_email(email, message):
         if email["email_server_port_ssl"]:
             smtp_server = smtplib.SMTP_SSL(
                 host=email["email_server"], port=email["email_server_port"])
+            print("Using SSL port")
         else:
             smtp_server = smtplib.SMTP(
                 host=email["email_server"], port=email["email_server_port"])
-
+            print("Using non SSL port")
         smtp_server.login(email["email_user"], email["email_user_password"])
+        print("Logged to email server")
         msg = MIMEMultipart()
         msg["From"] = email["email_from"]
         msg["To"] = email["email_to"]
@@ -62,6 +64,7 @@ def __send_email(email, message):
         msg.attach(
             MIMEText(str(json.dumps(message, indent=2, sort_keys=True)), "plain"))
         smtp_server.send_message(msg)
+        print("Sent email")
     except:
         print(sys.exc_info()[0])
         pass
