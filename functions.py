@@ -26,23 +26,22 @@ def __getEnv(env):
     password = config.get("password")
     id_tenant_name = config.get("id-tenant-name")
     jaas_uri = config.get("jaas_uri")
-    email_server = config.get("email_server")
-    email_server_port = config.get("email_server_port")
-    email_server_port_ssl = config.get("email_server_port_ssl")
-    email_user = config.get("email_user")
-    email_user_password = config.get("email_user_password")
-    email_from = config.get("email_from")
-    email_to = config.get("email_to")
-    email_subject = config.get("email_subject")
-    email = {"email_server": email_server, "email_server_port": email_server_port, "email_server_port_ssl": email_server_port_ssl,
-             "email_user": email_user, "email_user_password": email_user_password, "email_from": email_from, "email_to": email_to,
-             "email_subject": email_subject}
+    email = {
+      "email_server": config.get("email_server"), 
+      "email_server_port": config.get("email_server_port"), 
+      "email_server_port_ssl": config.get("email_server_port_ssl"),
+      "email_user": config.get("email_user"), 
+      "email_user_password": config.get("email_user_password"), 
+      "email_from": config.get("email_from"), 
+      "email_to": config.get("email_to"),
+      "email_subject": config.get("email_subject")
+    }
     auth = (user, password)
     headers = {
         "content-type": "application/json",
         "X-ID-TENANT-NAME": id_tenant_name
     }
-    return user, password, id_tenant_name, jaas_uri, auth, headers, email
+    return id_tenant_name, jaas_uri, auth, headers, email
 
 
 def __send_email(email, message):
@@ -81,7 +80,7 @@ def __startstop(args, command):
     """
     )
 
-    user, password, id_tenant_name, jaas_uri, auth, headers, email = __getEnv(
+    id_tenant_name, jaas_uri, auth, headers, email = __getEnv(
         args.env)
 
     try:
@@ -121,7 +120,7 @@ def scale(args):
     """
     )
 
-    user, password, id_tenant_name, jaas_uri, auth, headers, email = __getEnv(
+    id_tenant_name, jaas_uri, auth, headers, email = __getEnv(
         args.env)
 
     try:
@@ -159,7 +158,7 @@ def stop(args):
 def activity(args):
     """Return the the JCS instance operations activity logs."""
     global result
-    user, password, id_tenant_name, jaas_uri, auth, headers, email = __getEnv(
+    id_tenant_name, jaas_uri, auth, headers, email = __getEnv(
         args.env)
 
     try:
