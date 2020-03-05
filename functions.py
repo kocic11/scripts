@@ -8,8 +8,10 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
+import logging
 
 parser = None
+logger = None
 
 result = json.loads(
     """
@@ -52,22 +54,40 @@ def __getEnv(env):
 
     return params
 
+def __setLogger(args):
+  global logger
+  # create logger with 'spam_application'
+  logger = logging.getLogger('functions')
+  if args.verbose:
+    logger.setLevel(logging.DEBUG)
+  else:
+    logger.setLevel(logging.INFO)
+  # create file handler which logs even debug messages
+  fh = logging.FileHandler('functions.log')
+  fh.setLevel(logging.DEBUG)
+  # create console handler with a higher log level
+  ch = logging.StreamHandler()
+  ch.setLevel(logging.ERROR)
+  # create formatter and add it to the handlers
+  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+  fh.setFormatter(formatter)
+  ch.setFormatter(formatter)
+  # add the handlers to the logger
+  logger.addHandler(fh)
+  logger.addHandler(ch)
 
-def __send_email(email, message, verbose):
+def __send_email(email, message):
     try:
         if email["email_server_port_ssl"]:
             smtp_server = smtplib.SMTP_SSL(
                 host=email["email_server"], port=email["email_server_port"])
-            if verbose:
-                print("Using SSL port")
+            logger.debug("Using SSL port")
         else:
             smtp_server = smtplib.SMTP(
                 host=email["email_server"], port=email["email_server_port"])
-            if verbose:
-                print("Using non SSL port")
+            logger.debug("Using non SSL port")
         smtp_server.login(email["email_user"], email["email_user_password"])
-        if verbose:
-          print("Logged to email server")
+        logger.debug("Logged to email server")
         msg = MIMEMultipart()
         msg["From"] = email["email_from"]
         msg["To"] = email["email_to"]
@@ -75,10 +95,9 @@ def __send_email(email, message, verbose):
         msg.attach(
             MIMEText(str(json.dumps(message, indent=2, sort_keys=True)), "plain"))
         smtp_server.send_message(msg)
-        if verbose:
-            print("Sent email")
+        logger.debug("Sent email")
     except:
-        print(sys.exc_info()[0])
+        logger.eror(sys.exc_info()[0])
         pass
 
 
@@ -99,7 +118,7 @@ def __startstop(args, command):
     result, response = __post(uri, params, data)
 
     if args.email:
-        __send_email(params["email"], result, args.verbose)
+        __send_email(params["email"], result)
 
     return result, response
 
@@ -176,7 +195,7 @@ def scale(args):
     result, response = __post(uri, params, data)
 
     if args.email:
-        __send_email(params["email"], result, verbose)
+        __send_email(params["email"], result)
 
     return result, response
 
@@ -208,6 +227,7 @@ def print_usage(args):
 
 
 def main():
+    
     global parser
     parser = argparse.ArgumentParser()
     parser.add_argument("env", help="JSON file with environment variables")
@@ -242,6 +262,7 @@ def main():
     parser_jobid.add_argument("jobid", help="JCS instance job id")
     parser_jobid.set_defaults(func=jobid)
     args = parser.parse_args()
+    __setLogger(args)
     return args.func(args)
 
 
