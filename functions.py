@@ -214,8 +214,6 @@ def main():
     parser_scale.add_argument(
         "hosts", help="comma separated list of JCS instance hosts")
     parser_scale.add_argument("shape", help="JCS instance shape")
-    parser_scale.add_argument(
-        "--email", help="JCS instance shape", action="store_true")
     parser_scale.set_defaults(func=scale)
     parser_start = subparsers.add_parser("start", help="Start JCS instance")
     parser_start.add_argument("start", action='store_true')
@@ -235,3 +233,9 @@ def main():
     parser_jobid.set_defaults(func=jobid)
     args = parser.parse_args()
     return args.func(args)
+
+if __name__ == "__main__":
+  result, response = main()
+  print(result)
+  print(response.status_code)
+  print(response.text)
