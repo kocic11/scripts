@@ -268,6 +268,6 @@ def main():
 
 if __name__ == "__main__":
     result, response = main()
-    print(result)
-    print(response.status_code)
-    print(response.text)
+    logger.info(result)
+    logger.info(response.status_code)
+    logger.info(response.text)
