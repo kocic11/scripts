@@ -46,8 +46,8 @@ def __getEnv(env):
 
     mock_header = config.get("x-mock-match-request-body")
     if mock_header != None:
-      params["headers"].update({"x-mock-match-request-body":mock_header})
-      
+        params["headers"].update({"x-mock-match-request-body": mock_header})
+
     return params
 
 
@@ -88,10 +88,19 @@ def __startstop(args, command):
     )
 
     params = __getEnv(args.env)
+    uri = params["jaas_uri"] + "/instancemgmt/" + params["id_tenant_name"] + \
+        "/services/jaas/instances/" + args.instance + "/hosts/" + command
+    result, response = __post(uri, params, data)
 
+    if args.email:
+        __send_email(params["email"], result)
+
+    return result, response
+
+
+def __post(uri, params, data):
+    global result
     try:
-        uri = params["jaas_uri"] + "/instancemgmt/" + params["id_tenant_name"] + \
-            "/services/jaas/instances/" + args.instance + "/hosts/" + command
         response = requests.post(
             uri, auth=params["auth"], headers=params["headers"], data=json.dumps(data))
         if response.status_code == requests.codes.ACCEPTED:
@@ -104,8 +113,22 @@ def __startstop(args, command):
         result["details"]["message"] = "Unexpected error: " + \
             str(sys.exc_info()[0])
         pass
+    return result, response
 
-    __send_email(params["email"], result)
+
+def __get(uri, params):
+    try:
+        response = requests.get(
+            uri, auth=params["auth"], headers=params["headers"])
+        if response.status_code == requests.codes.OK:
+            result = response.json()
+        else:
+            result["details"]["message"] = "Unexpected error: " + \
+                str(response.status_code)
+    except:
+        result["details"]["message"] = "Unexpected error: " + \
+            str(sys.exc_info()[0])
+        pass
     return result, response
 
 
@@ -114,38 +137,10 @@ def jobid(args):
     global result
     params = __getEnv(args.env)
     params["headers"].pop("x-mock-match-request-body", None)
+    uri = params["jaas_uri"] + "/activitylog/" + \
+        params["id_tenant_name"] + "/job/" + args.jobid
 
-    try:
-        uri = params["jaas_uri"] + "/activitylog/" + \
-            params["id_tenant_name"] + "/job/" + args.jobid
-        check = True
-        loop = 0
-        while check:
-            if loop < 10:
-                response = requests.get(
-                    uri, auth=params["auth"], headers=params["headers"])
-                if response.status_code == requests.codes.OK:
-                    if response.json()["status"] in ["SUCCEED"]:
-                        result = response.json()
-                        check = False
-                        continue
-                else:
-                    result["details"]["message"] = "Unexpected error: " + \
-                        str(response.status_code)
-                    check = False
-                    continue
-                loop += 1
-                time.sleep(10)
-            else:
-                result["details"]["message"] = "Unexpected error: Job Status is not SUCCEED after 10 retries."
-                check = False
-                continue
-    except:
-        result["details"]["message"] = "Unexpected error: " + \
-            str(sys.exc_info()[0])
-        pass
-
-    return result, response
+    return __get(uri, params)
 
 
 def scale(args):
@@ -167,25 +162,16 @@ def scale(args):
 
     params = __getEnv(args.env)
 
-    try:
-        uri = params["jaas_uri"] + "/instancemgmt/" + params["id_tenant_name"] + \
-            "/services/jaas/instances/" + args.instance + "/hosts/scale"
-        data["components"]["WLS"]["hosts"] = args.hosts.split(",")
-        data["components"]["WLS"]["shape"] = args.shape
-        response = requests.post(
-            uri, auth=params["auth"], headers=params["headers"], data=json.dumps(data))
-        if response.status_code == requests.codes.ACCEPTED:
-            result = response.json()
-        else:
-            result["details"]["message"] = "Unexpected error: " + \
-                str(response.status_code) + ", " + \
-                response.text
-    except:
-        result["details"]["message"] = "Unexpected error: " + \
-            str(sys.exc_info()[0])
-        pass
+    uri = params["jaas_uri"] + "/instancemgmt/" + params["id_tenant_name"] + \
+        "/services/jaas/instances/" + args.instance + "/hosts/scale"
+    data["components"]["WLS"]["hosts"] = args.hosts.split(",")
+    data["components"]["WLS"]["shape"] = args.shape
 
-    __send_email(params["email"], result)
+    result, response = __post(uri, params, data)
+
+    if args.email:
+        __send_email(params["email"], result)
+
     return result, response
 
 
@@ -203,23 +189,10 @@ def activity(args):
     """Return the the JCS instance operations activity logs."""
     global result
     params = __getEnv(args.env)
+    uri = params["jaas_uri"] + "/activitylog/" + params["id_tenant_name"] + "/filter?serviceName=" + \
+        args.instance + "&fromStartDate=" + args.fromStartDate
 
-    try:
-        uri = params["jaas_uri"] + "/activitylog/" + params["id_tenant_name"] + "/filter?serviceName=" + \
-            args.instance + "&fromStartDate=" + args.fromStartDate
-        response = requests.get(
-            uri, auth=params["auth"], headers=params["headers"])
-        if response.status_code == requests.codes.OK:
-            result = response.json()
-        else:
-            result["details"]["message"] = "Unexpected error: " + \
-                str(response.status_code)
-    except:
-        result["details"]["message"] = "Unexpected error: " + \
-            str(sys.exc_info()[0])
-        pass
-
-    return result, response
+    return __get(uri, params)
 
 
 def print_usage(parser):
@@ -231,6 +204,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("env", help="JSON file with environment variables")
     parser.add_argument("instance", help="JCS instance name")
+    parser.add_argument("-e", "--email", help="Send email",
+                        action='store_true')
     parser.set_defaults(func=print_usage)
     subparsers = parser.add_subparsers(help='sub-command help')
     parser_scale = subparsers.add_parser("scale", help="Scale JCS instance")
