@@ -9,6 +9,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
 
+parser = None
+
 result = json.loads(
     """
   {
@@ -51,18 +53,21 @@ def __getEnv(env):
     return params
 
 
-def __send_email(email, message):
+def __send_email(email, message, verbose):
     try:
         if email["email_server_port_ssl"]:
             smtp_server = smtplib.SMTP_SSL(
                 host=email["email_server"], port=email["email_server_port"])
-            print("Using SSL port")
+            if verbose:
+                print("Using SSL port")
         else:
             smtp_server = smtplib.SMTP(
                 host=email["email_server"], port=email["email_server_port"])
-            print("Using non SSL port")
+            if verbose:
+                print("Using non SSL port")
         smtp_server.login(email["email_user"], email["email_user_password"])
-        print("Logged to email server")
+        if verbose:
+          print("Logged to email server")
         msg = MIMEMultipart()
         msg["From"] = email["email_from"]
         msg["To"] = email["email_to"]
@@ -70,7 +75,8 @@ def __send_email(email, message):
         msg.attach(
             MIMEText(str(json.dumps(message, indent=2, sort_keys=True)), "plain"))
         smtp_server.send_message(msg)
-        print("Sent email")
+        if verbose:
+            print("Sent email")
     except:
         print(sys.exc_info()[0])
         pass
@@ -93,7 +99,7 @@ def __startstop(args, command):
     result, response = __post(uri, params, data)
 
     if args.email:
-        __send_email(params["email"], result)
+        __send_email(params["email"], result, args.verbose)
 
     return result, response
 
@@ -170,7 +176,7 @@ def scale(args):
     result, response = __post(uri, params, data)
 
     if args.email:
-        __send_email(params["email"], result)
+        __send_email(params["email"], result, verbose)
 
     return result, response
 
@@ -195,16 +201,20 @@ def activity(args):
     return __get(uri, params)
 
 
-def print_usage(parser):
-    parser.print_help()
+def print_usage(args):
+    global parser
+    parser.print_usage()
     exit()
 
 
 def main():
+    global parser
     parser = argparse.ArgumentParser()
     parser.add_argument("env", help="JSON file with environment variables")
     parser.add_argument("instance", help="JCS instance name")
     parser.add_argument("-e", "--email", help="Send email",
+                        action='store_true')
+    parser.add_argument("-v", "--verbose", help="Print verbose information",
                         action='store_true')
     parser.set_defaults(func=print_usage)
     subparsers = parser.add_subparsers(help='sub-command help')
@@ -234,8 +244,9 @@ def main():
     args = parser.parse_args()
     return args.func(args)
 
+
 if __name__ == "__main__":
-  result, response = main()
-  print(result)
-  print(response.status_code)
-  print(response.text)
+    result, response = main()
+    print(result)
+    print(response.status_code)
+    print(response.text)

@@ -9,6 +9,7 @@ def test_stop():
     args.instance = "testjcs"
     args.stop = "stop"
     args.email = False
+    args.verbose = False
     result, response = stop(args)
     assert requests.codes.ACCEPTED == response.status_code
 
@@ -18,6 +19,7 @@ def test_start():
     args.instance = "testjcs"
     args.start = "start"
     args.email = False
+    args.verbose = False
     result, response = start(args)
     assert requests.codes.ACCEPTED == response.status_code
 
@@ -29,6 +31,7 @@ def test_scale_accepted():
     args.hosts = "testjcs-wls-1"
     args.shape = "VM.Standard2.1"
     args.email = False
+    args.verbose = False
     result, response = scale(args)
     assert requests.codes.ACCEPTED == response.status_code
 
@@ -40,6 +43,7 @@ def test_scale_bad():
     args.hosts = "testjcs-wls-1,testjcs-wls-2"
     args.shape = "VM.Standard2.1"
     args.email = False
+    args.verbose = False
     result, response = scale(args)
     assert requests.codes.BAD == response.status_code
 
@@ -48,6 +52,7 @@ def test_jobid():
     args.env = "mockenv.json"
     args.instance = "testjcs"
     args.jobid = "190047607"
-    args.email = "false"
+    args.email = False
+    args.verbose = False
     result, response = jobid(args)
     assert requests.codes.OK == response.status_code
