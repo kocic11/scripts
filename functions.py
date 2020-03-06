@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
 import logging
+from logging import handlers
 
 parser = None
 logger = None
@@ -63,7 +64,7 @@ def __setLogger(args):
   else:
     logger.setLevel(logging.INFO)
   # create file handler which logs even debug messages
-  fh = logging.FileHandler('functions.log')
+  fh = logging.handlers.RotatingFileHandler('functions.log', maxBytes=1000, backupCount=5)
   fh.setLevel(logging.DEBUG)
   # create console handler with a higher log level
   ch = logging.StreamHandler()
