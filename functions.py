@@ -9,7 +9,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
 import logging
+import logging.config
 from logging import handlers
+
+from os import path
 
 parser = None
 logger = None
@@ -49,6 +52,7 @@ def __getEnv(env):
         "X-ID-TENANT-NAME": params["id_tenant_name"]
     }
 
+    # Postman Mock Server requirement
     mock_header = config.get("x-mock-match-request-body")
     if mock_header != None:
         params["headers"].update({"x-mock-match-request-body": mock_header})
@@ -57,25 +61,16 @@ def __getEnv(env):
 
 def __setLogger(args):
   global logger
-  # create logger with 'spam_application'
-  logger = logging.getLogger('functions')
-  if args.verbose:
-    logger.setLevel(logging.DEBUG)
-  else:
-    logger.setLevel(logging.INFO)
-  # create file handler which logs even debug messages
-  fh = logging.handlers.RotatingFileHandler('functions.log', maxBytes=1000, backupCount=5)
-  fh.setLevel(logging.DEBUG)
-  # create console handler with a higher log level
-  ch = logging.StreamHandler()
-  ch.setLevel(logging.ERROR)
-  # create formatter and add it to the handlers
-  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-  fh.setFormatter(formatter)
-  ch.setFormatter(formatter)
-  # add the handlers to the logger
-  logger.addHandler(fh)
-  logger.addHandler(ch)
+  try:
+    with open("C:/Users/AKOCIC/Work/Code/scripts/log_conf.json") as f:
+      config = json.load(f)
+    logging.config.dictConfig(config["logging"])
+    logger = logging.getLogger()
+  except:
+    import traceback
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+    pass
 
 def __send_email(email, message):
     try:
@@ -162,7 +157,10 @@ def jobid(args):
     """Return the the JCS instance operation status by job id."""
     global result
     params = __getEnv(args.env)
+    
+    # Postman Mock Server requirement
     params["headers"].pop("x-mock-match-request-body", None)
+    
     uri = params["jaas_uri"] + "/activitylog/" + \
         params["id_tenant_name"] + "/job/" + args.jobid
 

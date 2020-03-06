@@ -5,5 +5,4 @@ test_*.py
 __pycache__
 .pytest_cache
 data
-*.json
 *.ps1
