@@ -65,7 +65,7 @@ def __setLogger(args):
     with open("C:/Users/AKOCIC/Work/Code/scripts/log_conf.json") as f:
       config = json.load(f)
     logging.config.dictConfig(config["logging"])
-    logger = logging.getLogger()
+    logger = logging.getLogger("functions")
   except:
     import traceback
     exc_type, exc_value, exc_tb = sys.exc_info()
@@ -93,7 +93,7 @@ def __send_email(email, message):
         smtp_server.send_message(msg)
         logger.debug("Sent email")
     except:
-        logger.eror(sys.exc_info()[0])
+        logger.error(sys.exc_info()[0])
         pass
 
 
@@ -155,6 +155,7 @@ def __get(uri, params):
 
 def jobid(args):
     """Return the the JCS instance operation status by job id."""
+    __setLogger(args)
     global result
     params = __getEnv(args.env)
     
@@ -169,6 +170,7 @@ def jobid(args):
 
 def scale(args):
     """Return the result of the JCS instance scale up/down operation."""
+    __setLogger(args)
     global result
     data = json.loads(
         """
@@ -201,16 +203,19 @@ def scale(args):
 
 def start(args):
     """Return the result of the JCS instance start operation."""
+    __setLogger(args)
     return __startstop(args, "start")
 
 
 def stop(args):
     """Return the result of the JCS instance stop operation."""
+    __setLogger(args)
     return __startstop(args, "stop")
 
 
 def activity(args):
     """Return the the JCS instance operations activity logs."""
+    __setLogger(args)
     global result
     params = __getEnv(args.env)
     uri = params["jaas_uri"] + "/activitylog/" + params["id_tenant_name"] + "/filter?serviceName=" + \
@@ -261,7 +266,6 @@ def main():
     parser_jobid.add_argument("jobid", help="JCS instance job id")
     parser_jobid.set_defaults(func=jobid)
     args = parser.parse_args()
-    __setLogger(args)
     return args.func(args)
 
 

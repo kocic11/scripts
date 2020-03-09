@@ -42,7 +42,7 @@ def test_scale_bad():
     args.scale = "scale"
     args.hosts = "testjcs-wls-1,testjcs-wls-2"
     args.shape = "VM.Standard2.1"
-    args.email = False
+    args.email = True
     args.verbose = False
     result, response = scale(args)
     assert requests.codes.BAD == response.status_code
