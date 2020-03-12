@@ -74,7 +74,7 @@ def __setLogger(args):
 
 def __send_email(email, message):
     try:
-        if email["email_server_port_ssl"]:
+        if email["email_server_port_ssl"] == "true":
             smtp_server = smtplib.SMTP_SSL(
                 host=email["email_server"], port=email["email_server_port"])
             logger.debug("Using SSL port")
