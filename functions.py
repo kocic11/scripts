@@ -55,6 +55,7 @@ def __send_email(email, message):
             smtp_server = smtplib.SMTP(
                 host=email["email_server"], port=email["email_server_port"])
             print("Using non SSL port")
+        smtp_server.set_debuglevel(2)
         smtp_server.login(email["email_user"], email["email_user_password"])
         print("Logged to email server")
         msg = MIMEMultipart()
