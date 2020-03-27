@@ -2,6 +2,8 @@ from functions import start, stop, scale, activity, jobid
 import argparse
 import requests
 
+# pylint: disable=no-member
+
 #TESTS
 def test_stop():
     args = argparse.Namespace()
@@ -10,8 +12,8 @@ def test_stop():
     args.stop = "stop"
     args.email = False
     args.verbose = False
-    result, response = stop(args)
-    assert requests.codes.ACCEPTED == response.status_code
+    _, response = stop(args)
+    assert requests.codes.ACCEPTED == response.status_code 
 
 def test_start():
     args = argparse.Namespace()
@@ -20,7 +22,7 @@ def test_start():
     args.start = "start"
     args.email = False
     args.verbose = False
-    result, response = start(args)
+    _, response = start(args)
     assert requests.codes.ACCEPTED == response.status_code
 
 def test_scale_accepted():
@@ -32,7 +34,7 @@ def test_scale_accepted():
     args.shape = "VM.Standard2.1"
     args.email = False
     args.verbose = False
-    result, response = scale(args)
+    _, response = scale(args)
     assert requests.codes.ACCEPTED == response.status_code
 
 def test_scale_bad():
@@ -44,7 +46,7 @@ def test_scale_bad():
     args.shape = "VM.Standard2.1"
     args.email = True
     args.verbose = False
-    result, response = scale(args)
+    _, response = scale(args)
     assert requests.codes.BAD == response.status_code
 
 def test_jobid():
@@ -54,5 +56,5 @@ def test_jobid():
     args.jobid = "190047607"
     args.email = False
     args.verbose = False
-    result, response = jobid(args)
+    _, response = jobid(args)
     assert requests.codes.OK == response.status_code
